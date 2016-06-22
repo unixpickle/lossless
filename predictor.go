@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+// EqualByteProbs is a ByteProbs where every outcome
+// is equally likely.
+var EqualByteProbs ByteProbs
+
 // ByteProbs is a list where the i-th element is the
 // probability that a given byte is byte(i).
 // In other words, ByteProbs is a probability
@@ -17,10 +21,11 @@ type ByteProbs [256]float64
 // A Predictor is any algorithm with can predict the
 // next byte in a stream of data.
 type Predictor interface {
-	// Clone creates a duplicate of this Predictor with
-	// different memory, so that multiple Predictors can
-	// be used concurrently.
-	Clone() Predictor
+	// New creates a Predictor which works the same way
+	// as this one, but with different memory.
+	// The new Predictor will be reset, i.e. it will have
+	// no memory of what this Predictor has seen.
+	New() Predictor
 
 	// Predictions returns the current predictions for
 	// the next byte in the sequence.
@@ -50,9 +55,9 @@ func RegisterPredictor(id string, p Predictor) {
 	predictorTable[id] = p
 }
 
-// GetPredictor returns a clone of the Predictor for
-// the unique identifier, or nil if the ID is not
-// registered.
+// GetPredictor returns a new copy of the Predictor
+// for the unique identifier, or nil if the unique
+// identifier is not registered.
 //
 // It is safe to call this concurrently with the
 // other Predictor management functions.
@@ -63,7 +68,7 @@ func GetPredictor(id string) Predictor {
 	if p == nil {
 		return nil
 	}
-	return p.Clone()
+	return p.New()
 }
 
 // PredictorIDs returns an alphabetically sorted list
@@ -84,4 +89,9 @@ func PredictorIDs() []string {
 
 func init() {
 	RegisterPredictor("static-english", &EnglishPredictor{})
+	RegisterPredictor("markov1", &MarkovPredictor{Grams: 1})
+	RegisterPredictor("markov2", &MarkovPredictor{Grams: 2})
+	for i := 0; i < 256; i++ {
+		EqualByteProbs[i] = 1.0 / 256.0
+	}
 }
