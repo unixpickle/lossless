@@ -1,7 +1,5 @@
 package lossless
 
-import "sort"
-
 func encodeByte(w *bitWriter, p ByteProbs, b byte) error {
 	evt := fullEvent(p)
 	for evt.Len() > 1 {
@@ -52,7 +50,7 @@ func fullEvent(probs ByteProbs) *event {
 		res.bytes[i] = byte(i)
 		res.probs[i] = x
 	}
-	sort.Stable(res)
+	res.arrangePoles()
 	return res
 }
 
@@ -63,10 +61,6 @@ func (e *event) Len() int {
 func (e *event) Swap(i, j int) {
 	e.bytes[i], e.bytes[j] = e.bytes[j], e.bytes[i]
 	e.probs[i], e.probs[j] = e.probs[j], e.probs[i]
-}
-
-func (e *event) Less(i, j int) bool {
-	return e.probs[i] > e.probs[j]
 }
 
 func (e *event) Subset(start, end int) *event {
@@ -111,4 +105,29 @@ func (e *event) probSum() float64 {
 		res += p
 	}
 	return res
+}
+
+// arrangePoles rearranges the bytes so that the most
+// likely byte comes first and the second most likely
+// byte comes last.
+func (e *event) arrangePoles() {
+	var biggest float64
+	var biggestIdx int
+	for i, x := range e.probs {
+		if x > biggest {
+			biggest = x
+			biggestIdx = i
+		}
+	}
+	e.Swap(biggestIdx, 0)
+
+	biggest = 0
+	biggestIdx = 1
+	for i, x := range e.probs[1:] {
+		if x > biggest {
+			biggest = x
+			biggestIdx = i + 1
+		}
+	}
+	e.Swap(biggestIdx, e.Len()-1)
 }
