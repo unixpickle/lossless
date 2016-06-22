@@ -71,3 +71,7 @@ func PredictorIDs() []string {
 	sort.Strings(res)
 	return res
 }
+
+func init() {
+	RegisterPredictor("static-english", &EnglishPredictor{})
+}
