@@ -13,5 +13,5 @@ func BenchmarkEnglishCompression(b *testing.B) {
 		buffer.WriteByte(byte(rand.Intn(0x100)))
 	}
 	b.ResetTimer()
-	Decompress(&EnglishPredictor{}, &buffer, ioutil.Discard)
+	Compress(&EnglishPredictor{}, &buffer, ioutil.Discard)
 }
