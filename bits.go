@@ -12,8 +12,12 @@ type bitReader struct {
 func (b *bitReader) ReadBit() (bool, error) {
 	if b.curIdx&7 == 0 {
 		var buf [1]byte
-		if _, err := b.R.Read(buf[:]); err != nil {
-			return false, err
+		for {
+			if n, err := b.R.Read(buf[:]); err != nil {
+				return false, err
+			} else if n != 0 {
+				break
+			}
 		}
 		b.curByte = buf[0]
 		b.curIdx = 0
@@ -43,6 +47,9 @@ func (b *bitWriter) WriteBit(bit bool) error {
 }
 
 func (b *bitWriter) Flush() error {
+	if b.curIdx == 0 {
+		return nil
+	}
 	b.curIdx = 0
 	_, err := b.W.Write([]byte{b.curByte})
 	b.curByte = 0
