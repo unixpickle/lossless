@@ -17,6 +17,11 @@ type ByteProbs [256]float64
 // A Predictor is any algorithm with can predict the
 // next byte in a stream of data.
 type Predictor interface {
+	// Clone creates a duplicate of this Predictor with
+	// different memory, so that multiple Predictors can
+	// be used concurrently.
+	Clone() Predictor
+
 	// Predictions returns the current predictions for
 	// the next byte in the sequence.
 	Predictions() ByteProbs
@@ -45,15 +50,20 @@ func RegisterPredictor(id string, p Predictor) {
 	predictorTable[id] = p
 }
 
-// GetPredictor returns the Predictor for the unique
-// identifier, or nil if the ID is not registered.
+// GetPredictor returns a clone of the Predictor for
+// the unique identifier, or nil if the ID is not
+// registered.
 //
 // It is safe to call this concurrently with the
 // other Predictor management functions.
 func GetPredictor(id string) Predictor {
 	tableLock.Lock()
 	defer tableLock.Unlock()
-	return predictorTable[id]
+	p := predictorTable[id]
+	if p == nil {
+		return nil
+	}
+	return p.Clone()
 }
 
 // PredictorIDs returns an alphabetically sorted list

@@ -9,6 +9,10 @@ var englishHistogram = ByteProbs{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.035861767232027
 // text to predict characters.
 type EnglishPredictor struct{}
 
+func (e *EnglishPredictor) Clone() Predictor {
+	return e
+}
+
 func (e *EnglishPredictor) Predictions() ByteProbs {
 	return englishHistogram
 }
