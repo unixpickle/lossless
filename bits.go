@@ -18,7 +18,7 @@ func (b *bitReader) ReadBit() (bool, error) {
 		b.curByte = buf[0]
 		b.curIdx = 0
 	}
-	res := (b.curByte & (1 << b.curIdx)) == 1
+	res := (b.curByte & (1 << b.curIdx)) != 0
 	b.curIdx++
 	return res, nil
 }

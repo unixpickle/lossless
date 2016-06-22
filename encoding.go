@@ -93,8 +93,9 @@ func (e *event) Split() (e1, e2 *event) {
 	}
 
 	var probSum float64
+	halfSum := e.probSum() * 0.5
 	for i, p := range e.probs {
-		if probSum >= 0.5 {
+		if probSum >= halfSum {
 			return e.Subset(0, i), e.Subset(i, e.Len())
 		}
 		probSum += p
@@ -102,4 +103,12 @@ func (e *event) Split() (e1, e2 *event) {
 
 	// Could happen due to rounding errors.
 	return e.Subset(0, e.Len()-1), e.Subset(e.Len()-1, e.Len())
+}
+
+func (e *event) probSum() float64 {
+	var res float64
+	for _, p := range e.probs {
+		res += p
+	}
+	return res
 }
