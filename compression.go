@@ -4,6 +4,7 @@ import "io"
 
 func Compress(p Predictor, input io.Reader, output io.Writer) error {
 	w := &bitWriter{W: output}
+	defer w.Flush()
 	p.Reset()
 	for {
 		dist := p.Predictions()
