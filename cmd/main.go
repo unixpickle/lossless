@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 5 {
+	if len(os.Args) < 4 {
 		dieUsage()
 	}
 
@@ -27,6 +27,19 @@ func main() {
 		os.Exit(1)
 	}
 	defer input.Close()
+
+	if len(os.Args) == 4 {
+		if subCmd == "crossentropy" {
+			res, err := lossless.CrossEntropy(predictor, input)
+			fmt.Println("Cross entropy:", res)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error during computation:", err)
+				os.Exit(1)
+			}
+			return
+		}
+		dieUsage()
+	}
 
 	output, err := os.Create(os.Args[4])
 	if err != nil {
@@ -51,7 +64,8 @@ func main() {
 }
 
 func dieUsage() {
-	fmt.Fprintln(os.Stderr, "Usage: cmd compress|decompress <model> <input.txt> <output.txt>\n\n"+
+	fmt.Fprintln(os.Stderr, "Usage: cmd compress|decompress <model> <input.txt> <output.txt>\n"+
+		"       cmd crossentropy <model> <input.txt>\n\n"+
 		"Available models:\n")
 
 	for _, model := range lossless.PredictorIDs() {
