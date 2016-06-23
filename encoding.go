@@ -82,7 +82,7 @@ func (e *event) Contains(b byte) bool {
 func (e *event) Split() (e1, e2 *event) {
 	if e.Len() == 0 {
 		return e, e
-	} else if e.probs[0] == 0 || e.probs[0] == e.probs[e.Len()-1] {
+	} else if e.probs[0] == 0 {
 		return e.Subset(0, e.Len()/2), e.Subset(e.Len()/2, e.Len())
 	}
 
